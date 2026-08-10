@@ -1,0 +1,71 @@
+# iTunes First-Run Apple ID Sign-In Helper
+
+Save as:
+
+`iTunesFirstRunSignIn.ps1`
+
+```powershell
+# ==========================================================
+# iTunes First-Run Apple ID Sign-In Helper
+# Windows + iTunes 12.x
+#
+# Opens iTunes and helps a new user reach the Apple ID
+# sign-in screen.
+#
+# This script NEVER asks for or stores your Apple ID
+# password.
+# ==========================================================
+
+$ErrorActionPreference = "SilentlyContinue"
+
+# ----------------------------------------------------------
+# FIND iTUNES
+# ----------------------------------------------------------
+
+$iTunesPaths = @(
+    "$env:ProgramFiles\iTunes\iTunes.exe",
+    "${env:ProgramFiles(x86)}\iTunes\iTunes.exe"
+)
+
+$iTunesPath = $iTunesPaths |
+    Where-Object {
+        Test-Path $_
+    } |
+    Select-Object -First 1
+
+if (-not $iTunesPath) {
+
+    Write-Host ""
+    Write-Host "iTunes 12.x was not found." `
+        -ForegroundColor Red
+
+    exit
+}
+
+# ----------------------------------------------------------
+# OPEN iTUNES
+# ----------------------------------------------------------
+
+$iTunesProcess = Get-Process `
+    "iTunes" `
+    -ErrorAction SilentlyContinue
+
+if (-not $iTunesProcess) {
+
+    Write-Host "Opening iTunes..."
+
+    Start-Process $iTunesPath
+
+    Start-Sleep -Seconds 6
+}
+else {
+
+    Write-Host "iTunes is already running."
+}
+
+# ----------------------------------------------------------
+# CONNECT TO iTUNES
+# ----------------------------------------------------------
+
+Write-
+```

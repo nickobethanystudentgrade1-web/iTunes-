@@ -1,0 +1,369 @@
+m# iTunes Apple Device Detector
+
+# Windows + iTunes 12.x
+
+$ErrorActionPreference = "SilentlyContinue"
+
+Write-Host ""
+Write-Host "========================================="
+Write-Host "       APPLE DEVICE DETECTOR"
+Write-Host "========================================="
+Write-Host ""
+Write-Host "Waiting for an iPhone, iPad, or iPod..."
+Write-Host "Press Ctrl+C to stop."
+Write-Host ""
+
+$LastStatus = ""
+
+while ($true) {
+
+```
+# Check whether iTunes is running
+$iTunesProcess = Get-Process "iTunes" -ErrorAction SilentlyContinue
+
+if (-not $iTunesProcess) {
+
+    if ($LastStatus -ne "iTunesClosed") {
+        Write-Host "$(Get-Date -Format 'HH:mm:ss') - iTunes is not running."
+        $LastStatus = "iTunesClosed"
+    }
+
+    Start-Sleep -Seconds 3
+    continue
+}
+
+try {
+
+    # Connect to iTunes
+    $iTunes = New-Object -ComObject iTunes.Application
+
+    # Check connected Apple devices
+    $Sources = $iTunes.Sources
+
+    $DeviceFound = $false
+
+    foreach ($Source in $Sources) {
+
+        # iTunes device sources normally have kind = 2
+        if ($Source.Kind -eq 2) {
+
+            $DeviceFound = $true
+            $DeviceName = $Source.Name
+
+            if ($LastStatus -ne $DeviceName) {
+
+                Write-Host ""
+                Write-Host "========================================="
+                Write-Host "        APPLE DEVICE DETECTED!"
+                Write-Host "========================================="
+                Write-Host ""
+                Write-Host "Device: $DeviceName" -ForegroundColor Green
+                Write-Host "Time:   $(Get-Date)"
+                Write-Host ""
+
+                $LastStatus = $DeviceName
+            }
+        }
+    }
+
+    if (-not $DeviceFound) {
+
+        if ($LastStatus -ne "NoDevice") {
+
+            Write-Host "$(Get-Date -Format 'HH:mm:ss') - No Apple device detected."
+
+            $LastStatus = "NoDevice"
+        }
+    }
+
+}
+catch {
+
+    if ($LastStatus -ne "iTunesError") {
+
+        Write-Host "Waiting for iTunes..."
+        $LastStatus = "iTunesError"
+    }
+}
+
+Start-Sleep -Seconds 3
+```
+
+}
+# iTunes Auto-Open + Device Detector
+
+# Windows + iTunes 12.x
+
+$ErrorActionPreference = "SilentlyContinue"
+
+Write-Host ""
+Write-Host "========================================="
+Write-Host "     iTUNES AUTO OPEN + DEVICE DETECTOR"
+Write-Host "========================================="
+Write-Host ""
+
+# Find iTunes
+
+$iTunesPaths = @(
+"$env:ProgramFiles\iTunes\iTunes.exe",
+"${env:ProgramFiles(x86)}\iTunes\iTunes.exe"
+)
+
+$iTunesPath = $iTunesPaths |
+Where-Object { Test-Path $_ } |
+Select-Object -First 1
+
+if (-not $iTunesPath) {
+Write-Host "iTunes.exe was not found." -ForegroundColor Red
+Write-Host "Install iTunes or check the iTunes installation path."
+exit
+}
+
+# Open iTunes if it isn't already running
+
+$iTunesProcess = Get-Process "iTunes" -ErrorAction SilentlyContinue
+
+if (-not $iTunesProcess) {
+
+```
+Write-Host "Opening iTunes..."
+
+Start-Process $iTunesPath
+
+Write-Host "Waiting for iTunes to start..."
+
+Start-Sleep -Seconds 5
+```
+
+}
+else {
+Write-Host "iTunes is already running."
+}
+
+Write-Host ""
+Write-Host "iTunes is ready."
+Write-Host "Waiting for an iPhone, iPad, or iPod..."
+Write-Host "Press Ctrl+C to stop."
+Write-Host ""
+
+$LastStatus = ""
+
+while ($true) {
+
+```
+try {
+
+    $iTunes = New-Object -ComObject iTunes.Application
+
+    $DeviceFound = $false
+
+    foreach ($Source in $iTunes.Sources) {
+
+        # iTunes device source
+        if ($Source.Kind -eq 2) {
+
+            $DeviceFound = $true
+            $DeviceName = $Source.Name
+
+            if ($LastStatus -ne $DeviceName) {
+
+                Write-Host ""
+                Write-Host "========================================="
+                Write-Host "       APPLE DEVICE DETECTED!"
+                Write-Host "========================================="
+                Write-Host ""
+                Write-Host "Device: $DeviceName" -ForegroundColor Green
+                Write-Host "Time:   $(Get-Date)"
+                Write-Host ""
+
+                $LastStatus = $DeviceName
+            }
+        }
+    }
+
+    if (-not $DeviceFound) {
+
+        if ($LastStatus -ne "NoDevice") {
+
+            Write-Host "$(Get-Date -Format 'HH:mm:ss') - Waiting for device..."
+
+            $LastStatus = "NoDevice"
+        }
+    }
+
+}
+catch {
+
+    Write-Host "Waiting for iTunes..."
+}
+
+Start-Sleep -Seconds 3
+```
+
+}
+# iTunes Auto-Open + Device Detection + Log
+
+Save as:
+
+`iTunesDeviceMonitor.ps1`
+
+```powershell
+# ==========================================================
+# iTunes Auto-Open + Apple Device Detection + Logging
+# Windows + iTunes 12.x
+# ==========================================================
+
+$ErrorActionPreference = "SilentlyContinue"
+
+# -------- LOG LOCATION --------
+
+$LogFolder = "$env:USERPROFILE\Documents\iTunes_Backup_Logs"
+
+if (-not (Test-Path $LogFolder)) {
+    New-Item -ItemType Directory -Path $LogFolder -Force | Out-Null
+}
+
+$LogFile = Join-Path $LogFolder "iTunes_Device_Log.txt"
+
+# -------- LOG FUNCTION --------
+
+function Write-Log {
+    param (
+        [string]$Message
+    )
+
+    $Time = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $Entry = "[$Time] $Message"
+
+    Add-Content -Path $LogFile -Value $Entry
+
+    Write-Host $Entry
+}
+
+Write-Log "=========================================="
+Write-Log "iTunes Device Monitor started"
+Write-Log "=========================================="
+
+# -------- FIND iTUNES --------
+
+$iTunesPaths = @(
+    "$env:ProgramFiles\iTunes\iTunes.exe",
+    "${env:ProgramFiles(x86)}\iTunes\iTunes.exe"
+)
+
+$iTunesPath = $iTunesPaths |
+    Where-Object { Test-Path $_ } |
+    Select-Object -First 1
+
+if (-not $iTunesPath) {
+
+    Write-Log "ERROR: iTunes.exe was not found."
+    Write-Log "Monitor stopped."
+
+    exit
+}
+
+Write-Log "iTunes found: $iTunesPath"
+
+# -------- OPEN iTUNES --------
+
+$iTunesProcess = Get-Process "iTunes" -ErrorAction SilentlyContinue
+
+if (-not $iTunesProcess) {
+
+    Write-Log "iTunes is not running."
+    Write-Log "Opening iTunes..."
+
+    Start-Process $iTunesPath
+
+    Start-Sleep -Seconds 5
+
+    Write-Log "iTunes opened."
+
+}
+else {
+
+    Write-Log "iTunes is already running."
+}
+
+Write-Log "Waiting for Apple device..."
+
+# -------- DEVICE MONITOR --------
+
+$LastDevice = ""
+
+while ($true) {
+
+    try {
+
+        $iTunes = New-Object -ComObject iTunes.Application
+
+        $DeviceFound = $false
+
+        foreach ($Source in $iTunes.Sources) {
+
+            # Device source
+            if ($Source.Kind -eq 2) {
+
+                $DeviceFound = $true
+                $DeviceName = $Source.Name
+
+                # Only log a new detection once
+                if ($LastDevice -ne $DeviceName) {
+
+                    Write-Log "APPLE DEVICE DETECTED: $DeviceName"
+
+                    $LastDevice = $DeviceName
+                }
+            }
+        }
+
+        # Device disconnected
+        if (-not $DeviceFound) {
+
+            if ($LastDevice -ne "") {
+
+                Write-Log "Apple device disconnected: $LastDevice"
+
+                $LastDevice = ""
+            }
+        }
+
+    }
+    catch {
+
+        if ($LastDevice -ne "iTunesError") {
+
+            Write-Log "Waiting for iTunes connection..."
+
+            $LastDevice = "iTunesError"
+        }
+    }
+
+    Start-Sleep -Seconds 3
+}
+```
+
+### Where the log is saved
+
+The script automatically creates:
+
+```text
+Documents
+└── iTunes_Backup_Logs
+    └── iTunes_Device_Log.txt
+```
+
+Example:
+
+```text
+[2026-08-07 07:45:10] iTunes Device Monitor started
+[2026-08-07 07:45:11] iTunes found: C:\Program Files\iTunes\iTunes.exe
+[2026-08-07 07:45:11] iTunes is not running.
+[2026-08-07 07:45:16] iTunes opened.
+[2026-08-07 07:45:16] Waiting for Apple device...
+[2026-08-07 07:47:02] APPLE DEVICE DETECTED: My iPhone
+[2026-08-07 07:50:21] Apple device disconnected: My iPhone
+```
+
+This version **only detects and logs the device**. It does not erase, restore, or automatically sync it.

@@ -1,0 +1,404 @@
+# iTunes All-in-One Controller for Windows
+
+Save this as:
+
+`iTunesController.ps1`
+
+```powershell
+# ==========================================================
+# iTunes All-in-One Controller
+# Windows + iTunes 12.x
+# ==========================================================
+
+$ErrorActionPreference = "Stop"
+
+# ----------------------------------------------------------
+# Connect to iTunes
+# ----------------------------------------------------------
+
+function Get-iTunes {
+    try {
+        $itunes = New-Object -ComObject iTunes.Application
+        return $itunes
+    }
+    catch {
+        Write-Host "Could not connect to iTunes." -ForegroundColor Red
+        Write-Host "Make sure iTunes 12.x is installed."
+        exit
+    }
+}
+
+$itunes = Get-iTunes
+
+# ----------------------------------------------------------
+# Basic information
+# ----------------------------------------------------------
+
+Write-Host ""
+Write-Host "===================================="
+Write-Host "       iTunes PowerShell Tool"
+Write-Host "===================================="
+Write-Host ""
+
+Write-Host "iTunes version: $($itunes.Version)"
+Write-Host ""
+
+# ----------------------------------------------------------
+# Menu
+# ----------------------------------------------------------
+
+function Show-Menu {
+
+    Write-Host ""
+    Write-Host "----------- iTunes Menu -----------"
+    Write-Host "1  - Play"
+    Write-Host "2  - Pause"
+    Write-Host "3  - Stop"
+    Write-Host "4  - Next Track"
+    Write-Host "5  - Previous Track"
+    Write-Host "6  - Set Volume"
+    Write-Host "7  - Show Current Song"
+    Write-Host "8  - Play Playlist"
+    Write-Host "9  - Import Music File"
+    Write-Host "10 - Sync iPhone/iPad/iPod"
+    Write-Host "11 - Open iTunes"
+    Write-Host "12 - Close iTunes"
+    Write-Host "13 - Add Controller to Startup"
+    Write-Host "14 - Exit"
+    Write-Host "-----------------------------------"
+}
+
+# ----------------------------------------------------------
+# Play
+# ----------------------------------------------------------
+
+function Play-iTunes {
+    $itunes.Play()
+    Write-Host "▶ Playing."
+}
+
+# ----------------------------------------------------------
+# Pause
+# ----------------------------------------------------------
+
+function Pause-iTunes {
+    $itunes.Pause()
+    Write-Host "⏸ Paused."
+}
+
+# ----------------------------------------------------------
+# Stop
+# ----------------------------------------------------------
+
+function Stop-iTunes {
+    $itunes.Stop()
+    Write-Host "⏹ Stopped."
+}
+
+# ----------------------------------------------------------
+# Next track
+# ----------------------------------------------------------
+
+function Next-iTunes {
+    $itunes.NextTrack()
+    Write-Host "⏭ Next track."
+}
+
+# ----------------------------------------------------------
+# Previous track
+# ----------------------------------------------------------
+
+function Previous-iTunes {
+    $itunes.PreviousTrack()
+    Write-Host "⏮ Previous track."
+}
+
+# ----------------------------------------------------------
+# Volume
+# ----------------------------------------------------------
+
+function Set-iTunesVolume {
+
+    $volume = Read-Host "Enter volume from 0-100"
+
+    if ($volume -match '^\d+$' -and
+        [int]$volume -ge 0 -and
+        [int]$volume -le 100) {
+
+        $itunes.SoundVolume = [int]$volume
+
+        Write-Host "Volume set to $volume%."
+    }
+    else {
+        Write-Host "Invalid volume." -ForegroundColor Red
+    }
+}
+
+# ----------------------------------------------------------
+# Current song
+# ----------------------------------------------------------
+
+function Show-CurrentSong {
+
+    try {
+
+        $track = $itunes.CurrentTrack
+
+        if ($null -eq $track) {
+            Write-Host "Nothing is currently playing."
+            return
+        }
+
+        Write-Host ""
+        Write-Host "Current Song"
+        Write-Host "------------"
+        Write-Host "Name:   $($track.Name)"
+        Write-Host "Artist: $($track.Artist)"
+        Write-Host "Album:  $($track.Album)"
+        Write-Host "Genre:  $($track.Genre)"
+        Write-Host ""
+
+    }
+    catch {
+        Write-Host "No current track."
+    }
+}
+
+# ----------------------------------------------------------
+# Play playlist
+# ----------------------------------------------------------
+
+function Play-Playlist {
+
+    $playlistName = Read-Host "Enter playlist name"
+
+    $library = $itunes.LibrarySource
+    $playlists = $library.Playlists
+
+    $found = $false
+
+    foreach ($playlist in $playlists) {
+
+        if ($playlist.Name -eq $playlistName) {
+
+            Write-Host "Playing playlist: $playlistName"
+
+            $tracks = $playlist.Tracks
+
+            if ($tracks.Count -gt 0) {
+                $tracks.Item(1).Play()
+                $found = $true
+            }
+
+            break
+        }
+    }
+
+    if (-not $found) {
+        Write-Host "Playlist not found." -ForegroundColor Red
+    }
+}
+
+# ----------------------------------------------------------
+# Import music
+# ----------------------------------------------------------
+
+function Import-Music {
+
+    $file = Read-Host "Enter full path of music file"
+
+    if (-not (Test-Path $file)) {
+        Write-Host "File not found." -ForegroundColor Red
+        return
+    }
+
+    try {
+
+        $itunes.LibraryPlaylist.AddFile($file)
+
+        Write-Host "Music imported successfully."
+
+    }
+    catch {
+
+        Write-Host "Could not import the file." -ForegroundColor Red
+    }
+}
+
+# ----------------------------------------------------------
+# Sync connected Apple device
+# ----------------------------------------------------------
+
+function Sync-AppleDevice {
+
+    Write-Host ""
+    Write-Host "Looking for connected Apple device..."
+
+    try {
+
+        $itunes.UpdateIPod()
+
+        Write-Host "Sync command sent to iTunes."
+        Write-Host "If a device is connected, iTunes will handle the synchronization."
+
+    }
+    catch {
+
+        Write-Host "No compatible device was found or syncing failed."
+        Write-Host "Connect the device and make sure iTunes recognizes it."
+    }
+}
+
+# ----------------------------------------------------------
+# Open iTunes
+# ----------------------------------------------------------
+
+function Open-iTunes {
+
+    Start-Process "iTunes.exe"
+
+    Start-Sleep -Seconds 3
+
+    Write-Host "iTunes opened."
+}
+
+# ----------------------------------------------------------
+# Close iTunes
+# ----------------------------------------------------------
+
+function Close-iTunes {
+
+    try {
+        $itunes.Quit()
+        Write-Host "iTunes closed."
+    }
+    catch {
+        Write-Host "Could not close iTunes."
+    }
+}
+
+# ----------------------------------------------------------
+# Add to Windows Startup
+# ----------------------------------------------------------
+
+function Add-ToStartup {
+
+    $scriptPath = (Get-Location).Path + "\iTunesController.ps1"
+
+    $startupFolder = [Environment]::GetFolderPath(
+        "Startup"
+    )
+
+    $shortcutPath = Join-Path `
+        $startupFolder `
+        "iTunes Controller.lnk"
+
+    $shell = New-Object -ComObject WScript.Shell
+
+    $shortcut = $shell.CreateShortcut($shortcutPath)
+
+    $shortcut.TargetPath = "powershell.exe"
+
+    $shortcut.Arguments = `
+        "-ExecutionPolicy Bypass -File `"$scriptPath`""
+
+    $shortcut.WorkingDirectory = (Get-Location).Path
+
+    $shortcut.Save()
+
+    Write-Host ""
+    Write-Host "iTunes Controller added to Windows Startup."
+}
+
+# ----------------------------------------------------------
+# Main loop
+# ----------------------------------------------------------
+
+while ($true) {
+
+    Show-Menu
+
+    $choice = Read-Host "Choose an option"
+
+    switch ($choice) {
+
+        "1" {
+            Play-iTunes
+        }
+
+        "2" {
+            Pause-iTunes
+        }
+
+        "3" {
+            Stop-iTunes
+        }
+
+        "4" {
+            Next-iTunes
+        }
+
+        "5" {
+            Previous-iTunes
+        }
+
+        "6" {
+            Set-iTunesVolume
+        }
+
+        "7" {
+            Show-CurrentSong
+        }
+
+        "8" {
+            Play-Playlist
+        }
+
+        "9" {
+            Import-Music
+        }
+
+        "10" {
+            Sync-AppleDevice
+        }
+
+        "11" {
+            Open-iTunes
+        }
+
+        "12" {
+            Close-iTunes
+        }
+
+        "13" {
+            Add-ToStartup
+        }
+
+        "14" {
+            Write-Host "Goodbye!"
+            break
+        }
+
+        default {
+            Write-Host "Invalid option." -ForegroundColor Red
+        }
+    }
+}
+```
+
+### How to run it
+
+1. Open **Notepad**.
+2. Paste the script.
+3. Save it as **`iTunesController.ps1`**.
+4. Right-click Start → **Windows PowerShell**.
+5. Go to the folder containing the script.
+6. Run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\iTunesController.ps1
+```
+
+The script will open a menu where you can control iTunes.
+
+**Important:** the sync function uses iTunes' own `UpdateIPod()` command. Apple's documentation confirms that iTunes can sync library content to connected Apple devices, although exactly what gets synchronized depends on the device and iTunes sync settings.

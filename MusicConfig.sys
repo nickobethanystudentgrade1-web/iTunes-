@@ -1,0 +1,78 @@
+# `musiconfig.json`
+
+```json
+{
+  "application": {
+    "name": "Music",
+    "platform": "macOS"
+  },
+
+  "monitor": {
+    "enabled": true,
+    "checkIntervalSeconds": 5,
+    "waitForNextDevice": true
+  },
+
+  "backup": {
+    "enabled": true,
+    "rootFolder": "~/Music/Music_Backups",
+    "createDatedFolders": true,
+    "dateFormat": "yyyy-MM-dd_HH-mm-ss",
+    "saveBackupInfo": true
+  },
+
+  "logging": {
+    "enabled": true,
+    "file": "~/Music/Music_Backups/Music_Device_Log.txt",
+    "includeDeviceEvents": true,
+    "includeBackupEvents": true,
+    "includeSyncEvents": true
+  },
+
+  "musicCategories": {
+    "enabled": true,
+    "source": "genre",
+    "defaultCategory": "Other",
+    "categories": [
+      "Rock",
+      "Pop",
+      "Hip-Hop",
+      "Rap",
+      "Classical",
+      "Jazz",
+      "Electronic",
+      "Country",
+      "R&B",
+      "Soundtrack",
+      "Other"
+    ]
+  },
+
+  "appleAccount": {
+    "signInPrompt": true,
+    "storePassword": false,
+    "storeAuthenticationTokens": false
+  },
+
+  "screenTime": {
+    "restoreSupportedDataOnly": true,
+    "bypassProtection": false,
+    "storePasscode": false
+  },
+
+  "apps": {
+    "restoreThroughAppleSupportedMethods": true,
+    "copyAppExecutables": false
+  },
+
+  "deviceBackup": {
+    "automaticOnDetection": true,
+    "syncWithMusic": true,
+    "createLocalBackupRecord": true
+  }
+}
+```
+
+This keeps the configuration separate from the script, so you can change settings like the **backup location, monitoring interval, categories, and logging** without editing the main script.
+
+It intentionally contains **no Apple Account password, authentication token, or Screen Time passcode**.

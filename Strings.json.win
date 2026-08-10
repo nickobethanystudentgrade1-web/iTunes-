@@ -1,0 +1,53 @@
+```json
+{
+  "AppName": "Caroline",
+  "AppVersion": "2.4.0",
+
+  "HomeTitle": "Caroline",
+  "Music": "Music",
+  "Library": "Library",
+  "Settings": "Settings",
+
+  "Devices": "Devices",
+  "DeviceDetected": "Device detected",
+  "WaitingForDevice": "Waiting for device…",
+  "DeviceDisconnected": "Device disconnected",
+
+  "Backup": "Backup",
+  "BackupNow": "Back Up Now",
+  "BackupStarted": "Backup started",
+  "BackupComplete": "Backup complete",
+
+  "Sync": "Sync",
+  "SyncNow": "Sync Now",
+  "SyncStarted": "Sync started",
+  "SyncComplete": "Sync complete",
+
+  "Restore": "Restore",
+  "RestoreBackup": "Restore Backup",
+  "RestoreComplete": "Restore complete",
+
+  "AppleAccount": "Apple Account",
+  "SignIn": "Sign In",
+  "SignOut": "Sign Out",
+
+  "ScreenTime": "Screen Time",
+  "Apps": "Apps",
+
+  "MusicCategories": "Music Categories",
+  "Rock": "Rock",
+  "Pop": "Pop",
+  "HipHop": "Hip-Hop",
+  "Classical": "Classical",
+  "Jazz": "Jazz",
+  "Electronic": "Electronic",
+  "Country": "Country",
+  "RnB": "R&B",
+  "Soundtrack": "Soundtrack",
+  "Other": "Other",
+
+  "BackupDate": "Backup date",
+  "BackupLocation": "Backup location",
+  "Logs": "Logs"
+}
+```

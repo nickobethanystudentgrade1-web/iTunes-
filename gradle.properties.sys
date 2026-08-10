@@ -1,0 +1,45 @@
+```properties
+# ==========================================================
+# Caroline 2.4.0 - Gradle Properties
+# ==========================================================
+
+# AndroidX
+android.useAndroidX=true
+
+# Kotlin code style
+kotlin.code.style=official
+
+# Gradle performance
+org.gradle.daemon=true
+org.gradle.parallel=true
+org.gradle.caching=true
+
+# JVM memory
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+
+# Kotlin build settings
+kotlin.incremental=true
+
+# Android build settings
+android.nonTransitiveRClass=true
+android.nonFinalResIds=true
+
+# Project information
+caroline.versionName=2.4.0
+caroline.versionCode=20400
+caroline.appName=Caroline
+```
+
+Save it at:
+
+```text
+Caroline/
+├── gradle.properties
+├── settings.gradle.kts
+├── version.properties
+├── build.gradle.kts
+└── app/
+    └── build.gradle.kts
+```
+
+This is compatible with the Android/Compose project structure we've been building.

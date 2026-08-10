@@ -1,0 +1,257 @@
+# iTunes Auto-Open → Detect → Start Sync → Log
+
+Save as:
+
+`iTunesAutoSync.ps1`
+
+```powershell
+# ==========================================================
+# iTunes Auto-Open + Device Detection + Sync + Logging
+# Windows + iTunes 12.x
+# ==========================================================
+
+$ErrorActionPreference = "SilentlyContinue"
+
+# ----------------------------------------------------------
+# LOG
+# ----------------------------------------------------------
+
+$LogFolder = "$env:USERPROFILE\Documents\iTunes_Backup_Logs"
+
+if (-not (Test-Path $LogFolder)) {
+    New-Item -ItemType Directory -Path $LogFolder -Force | Out-Null
+}
+
+$LogFile = Join-Path $LogFolder "iTunes_Device_Log.txt"
+
+function Write-Log {
+    param (
+        [string]$Message
+    )
+
+    $Time = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    $Entry = "[$Time] $Message"
+
+    Add-Content -Path $LogFile -Value $Entry
+    Write-Host $Entry
+}
+
+Write-Log "=========================================="
+Write-Log "iTunes Auto Sync started"
+Write-Log "=========================================="
+
+# ----------------------------------------------------------
+# FIND iTUNES
+# ----------------------------------------------------------
+
+$iTunesPaths = @(
+    "$env:ProgramFiles\iTunes\iTunes.exe",
+    "${env:ProgramFiles(x86)}\iTunes\iTunes.exe"
+)
+
+$iTunesPath = $iTunesPaths |
+    Where-Object { Test-Path $_ } |
+    Select-Object -First 1
+
+if (-not $iTunesPath) {
+
+    Write-Log "ERROR: iTunes.exe was not found."
+    exit
+}
+
+Write-Log "iTunes found: $iTunesPath"
+
+# ----------------------------------------------------------
+# OPEN iTUNES
+# ----------------------------------------------------------
+
+$iTunesProcess = Get-Process "iTunes" -ErrorAction SilentlyContinue
+
+if (-not $iTunesProcess) {
+
+    Write-Log "Opening iTunes..."
+
+    Start-Process $iTunesPath
+
+    Write-Log "iTunes process started."
+
+}
+else {
+
+    Write-Log "iTunes is already running."
+}
+
+# ----------------------------------------------------------
+# WAIT FOR iTUNES COM INTERFACE
+# ----------------------------------------------------------
+
+Write-Log "Waiting for iTunes to become ready..."
+
+$iTunes = $null
+
+while ($null -eq $iTunes) {
+
+    try {
+
+        $iTunes = New-Object -ComObject iTunes.Application
+
+        Write-Log "iTunes is ready."
+
+    }
+    catch {
+
+        Start-Sleep -Seconds 2
+    }
+}
+
+# ----------------------------------------------------------
+# WAIT FOR DEVICE RECOGNITION
+# ----------------------------------------------------------
+
+Write-Host ""
+Write-Host "========================================="
+Write-Host " WAITING FOR APPLE DEVICE"
+Write-Host "========================================="
+Write-Host ""
+Write-Host "Connect your iPhone, iPad, or iPod."
+Write-Host ""
+
+Write-Log "Waiting for iTunes to recognize an Apple device."
+
+$DeviceDetected = $false
+$DeviceName = ""
+
+while (-not $DeviceDetected) {
+
+    try {
+
+        foreach ($Source in $iTunes.Sources) {
+
+            # Device source
+            if ($Source.Kind -eq 2) {
+
+                $DeviceDetected = $true
+                $DeviceName = $Source.Name
+
+                break
+            }
+        }
+
+    }
+    catch {
+
+        Write-Log "Could not read iTunes device list. Retrying..."
+    }
+
+    if (-not $DeviceDetected) {
+        Start-Sleep -Seconds 3
+    }
+}
+
+# ----------------------------------------------------------
+# DEVICE DETECTED
+# ----------------------------------------------------------
+
+Write-Log "DEVICE RECOGNIZED BY iTUNES: $DeviceName"
+
+Write-Host ""
+Write-Host "Device detected: $DeviceName" -ForegroundColor Green
+Write-Host ""
+
+# Give iTunes a moment to finish initializing the device
+Write-Log "Waiting for device initialization..."
+
+Start-Sleep -Seconds 5
+
+# ----------------------------------------------------------
+# START iTUNES SYNC
+# ----------------------------------------------------------
+
+Write-Log "Starting iTunes device sync..."
+
+try {
+
+    $iTunes.UpdateIPod()
+
+    Write-Log "Sync command successfully sent to iTunes."
+
+    Write-Host ""
+    Write-Host "========================================="
+    Write-Host "             SYNC STARTED"
+    Write-Host "========================================="
+    Write-Host ""
+
+}
+catch {
+
+    Write-Log "ERROR: Unable to start iTunes sync."
+    Write-Log $_.Exception.Message
+
+    Write-Host ""
+    Write-Host "Sync could not be started." -ForegroundColor Red
+    exit
+}
+
+# ----------------------------------------------------------
+# MONITOR DEVICE
+# ----------------------------------------------------------
+
+Write-Log "Monitoring device connection..."
+
+while ($true) {
+
+    $StillConnected = $false
+
+    try {
+
+        foreach ($Source in $iTunes.Sources) {
+
+            if ($Source.Kind -eq 2) {
+
+                $StillConnected = $true
+                break
+            }
+        }
+
+    }
+    catch {
+        $StillConnected = $false
+    }
+
+    if (-not $StillConnected) {
+
+        Write-Log "Device disconnected: $DeviceName"
+
+        Write-Host ""
+        Write-Host "Device disconnected."
+
+        break
+    }
+
+    Start-Sleep -Seconds 5
+}
+
+Write-Log "iTunes Auto Sync finished."
+```
+
+### The new sequence
+
+```text
+Open iTunes
+     ↓
+Wait for iTunes to be ready
+     ↓
+Wait for iPhone/iPad/iPod
+     ↓
+Wait for iTunes to recognize it
+     ↓
+Log device name
+     ↓
+Start iTunes sync
+     ↓
+Monitor connection
+     ↓
+Log when device disconnects
+```
+
+**Important:** keep the device connected until iTunes finishes its sync. Also, the device may require it to be trusted/unlocked before iTunes can access it.

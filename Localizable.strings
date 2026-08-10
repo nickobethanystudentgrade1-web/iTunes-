@@ -1,0 +1,50 @@
+APP_NAME" = "Caroline";
+"APP_VERSION" = "2.4.0";
+
+"HOME_TITLE" = "Caroline";
+"MUSIC" = "Music";
+"LIBRARY" = "Library";
+"SETTINGS" = "Settings";
+
+"DEVICES" = "Devices";
+"DEVICE_DETECTED" = "Device detected";
+"WAITING_FOR_DEVICE" = "Waiting for device…";
+"DEVICE_DISCONNECTED" = "Device disconnected";
+
+"BACKUP" = "Backup";
+"BACKUP_NOW" = "Back Up Now";
+"BACKUP_STARTED" = "Backup started";
+"BACKUP_COMPLETE" = "Backup complete";
+
+"SYNC" = "Sync";
+"SYNC_NOW" = "Sync Now";
+"SYNC_STARTED" = "Sync started";
+"SYNC_COMPLETE" = "Sync complete";
+
+"RESTORE" = "Restore";
+"RESTORE_BACKUP" = "Restore Backup";
+"RESTORE_COMPLETE" = "Restore complete";
+
+"APPLE_ACCOUNT" = "Apple Account";
+"SIGN_IN" = "Sign In";
+"SIGN_OUT" = "Sign Out";
+
+"SCREEN_TIME" = "Screen Time";
+"APPS" = "Apps";
+
+"MUSIC_CATEGORIES" = "Music Categories";
+"ROCK" = "Rock";
+"POP" = "Pop";
+"HIP_HOP" = "Hip-Hop";
+"CLASSICAL" = "Classical";
+"JAZZ" = "Jazz";
+"ELECTRONIC" = "Electronic";
+"COUNTRY" = "Country";
+"R_AND_B" = "R&B";
+"SOUNDTRACK" = "Soundtrack";
+"OTHER" = "Other";
+
+"BACKUP_DATE" = "Backup date";
+"BACKUP_LOCATION" = "Backup location";
+"LOGS" = "Logs";
+For a native macOS app, styles are normally defined using SwiftUI modifiers or AppKit configuration rather than a styles.xml file.

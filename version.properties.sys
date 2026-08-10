@@ -1,0 +1,30 @@
+# `version.properties`
+
+```properties
+# Caroline application version
+APP_NAME=Caroline
+
+VERSION_NAME=2.4.0
+VERSION_CODE=20400
+
+# Supported platforms
+WINDOWS_VERSION=11
+MACOS_SUPPORTED=true
+
+# Build information
+BUILD_TYPE=release
+RELEASE_CHANNEL=stable
+```
+
+Place it in the project root:
+
+```text
+Caroline/
+├── app/
+├── version.properties
+├── settings.gradle.kts
+├── build.gradle.kts
+└── gradle.properties
+```
+
+`VERSION_NAME=2.4.0` is the user-facing version, while `VERSION_CODE=20400` is the Android internal version code.

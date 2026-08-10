@@ -1,0 +1,75 @@
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Main application style -->
+
+    <Style
+        x:Key="CarolineWindowStyle"
+        TargetType="Window">
+
+        <Setter
+            Property="Title"
+            Value="Caroline" />
+
+    </Style>
+
+    <Style
+        x:Key="CarolineButtonStyle"
+        TargetType="Button">
+
+        <Setter
+            Property="Padding"
+            Value="16,10" />
+
+        <Setter
+            Property="Margin"
+            Value="4" />
+
+        <Setter
+            Property="FontSize"
+            Value="14" />
+
+    </Style>
+
+    <Style
+        x:Key="CarolineTitleStyle"
+        TargetType="TextBlock">
+
+        <Setter
+            Property="FontSize"
+            Value="28" />
+
+        <Setter
+            Property="FontWeight"
+            Value="SemiBold" />
+
+        <Setter
+            Property="Margin"
+            Value="0,0,0,16" />
+
+    </Style>
+
+    <Style
+        x:Key="CarolineSectionStyle"
+        TargetType="TextBlock">
+
+        <Setter
+            Property="FontSize"
+            Value="20" />
+
+        <Setter
+            Property="FontWeight"
+            Value="SemiBold" />
+
+        <Setter
+            Property="Margin"
+            Value="0,12,0,8" />
+
+    </Style>
+
+</ResourceDictionary>
+```

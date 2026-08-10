@@ -1,0 +1,136 @@
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Caroline</string>
+    <string name="app_version">2.4.0</string>
+
+    <string name="home_title">Caroline</string>
+    <string name="music">Music</string>
+    <string name="library">Library</string>
+    <string name="settings">Settings</string>
+
+    <string name="devices">Devices</string>
+    <string name="device_detected">Device detected</string>
+    <string name="waiting_for_device">Waiting for device…</string>
+    <string name="device_disconnected">Device disconnected</string>
+
+    <string name="backup">Backup</string>
+    <string name="backup_now">Back Up Now</string>
+    <string name="backup_started">Backup started</string>
+    <string name="backup_complete">Backup complete</string>
+
+    <string name="sync">Sync</string>
+    <string name="sync_now">Sync Now</string>
+    <string name="sync_started">Sync started</string>
+    <string name="sync_complete">Sync complete</string>
+
+    <string name="restore">Restore</string>
+    <string name="restore_backup">Restore Backup</string>
+    <string name="restore_complete">Restore complete</string>
+
+    <string name="apple_account">Apple Account</string>
+    <string name="sign_in">Sign In</string>
+    <string name="sign_out">Sign Out</string>
+
+    <string name="screen_time">Screen Time</string>
+    <string name="apps">Apps</string>
+
+    <string name="music_categories">Music Categories</string>
+    <string name="rock">Rock</string>
+    <string name="pop">Pop</string>
+    <string name="hip_hop">Hip-Hop</string>
+    <string name="classical">Classical</string>
+    <string name="jazz">Jazz</string>
+    <string name="electronic">Electronic</string>
+    <string name="country">Country</string>
+    <string name="r_and_b">R&B</string>
+    <string name="soundtrack">Soundtrack</string>
+    <string name="other">Other</string>
+
+    <string name="backup_date">Backup date</string>
+    <string name="backup_location">Backup location</string>
+    <string name="logs">Logs</string>
+
+</resources>
+```
+
+### Android `styles.xml`
+
+For modern Android/Jetpack Compose, most styling is normally handled by Compose rather than a large XML styles file. This provides the basic application theme:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Caroline"
+        parent="android:style/Theme.Material.Light.NoActionBar">
+
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+
+    </style>
+
+</resources>
+```
+
+### macOS strings
+
+macOS doesn't use Android's `strings.xml`. For a native macOS version, you can use `Localizable.strings`o:
+
+```text
+"APP_NAME" = "Caroline";
+"APP_VERSION" = "2.4.0";
+
+"HOME_TITLE" = "Caroline";
+"MUSIC" = "Music";
+"LIBRARY" = "Library";
+"SETTINGS" = "Settings";
+
+"DEVICES" = "Devices";
+"DEVICE_DETECTED" = "Device detected";
+"WAITING_FOR_DEVICE" = "Waiting for device…";
+"DEVICE_DISCONNECTED" = "Device disconnected";
+
+"BACKUP" = "Backup";
+"BACKUP_NOW" = "Back Up Now";
+"BACKUP_STARTED" = "Backup started";
+"BACKUP_COMPLETE" = "Backup complete";
+
+"SYNC" = "Sync";
+"SYNC_NOW" = "Sync Now";
+"SYNC_STARTED" = "Sync started";
+"SYNC_COMPLETE" = "Sync complete";
+
+"RESTORE" = "Restore";
+"RESTORE_BACKUP" = "Restore Backup";
+"RESTORE_COMPLETE" = "Restore complete";
+
+"APPLE_ACCOUNT" = "Apple Account";
+"SIGN_IN" = "Sign In";
+"SIGN_OUT" = "Sign Out";
+
+"SCREEN_TIME" = "Screen Time";
+"APPS" = "Apps";
+
+"MUSIC_CATEGORIES" = "Music Categories";
+"ROCK" = "Rock";
+"POP" = "Pop";
+"HIP_HOP" = "Hip-Hop";
+"CLASSICAL" = "Classical";
+"JAZZ" = "Jazz";
+"ELECTRONIC" = "Electronic";
+"COUNTRY" = "Country";
+"R_AND_B" = "R&B";
+"SOUNDTRACK" = "Soundtrack";
+"OTHER" = "Other";
+
+"BACKUP_DATE" = "Backup date";
+"BACKUP_LOCATION" = "Backup location";
+"LOGS" = "Logs";
+```
+
+For a native macOS app, styles are normally defined using **SwiftUI modifiers** or AppKit configuration rather than a `styles.xml` file.

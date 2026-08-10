@@ -1,0 +1,78 @@
+# `loginproviders.sh`
+
+```bash
+#!/bin/bash
+
+# ==========================================================
+# Music Login Provider Launcher
+# macOS
+#
+# Supports:
+#   1. Google
+#   2. Yahoo
+#   3. Apple
+#
+# Credentials are entered directly on the provider's
+# official website. This script never stores passwords.
+# ==========================================================
+
+echo ""
+echo "======================================"
+echo "       MUSIC ACCOUNT SIGN-IN"
+echo "======================================"
+echo ""
+echo "1) Google"
+echo "2) Yahoo"
+echo "3) Apple"
+echo "4) Exit"
+echo ""
+
+read -p "Choose a sign-in provider: " choice
+
+case "$choice" in
+
+    1)
+        echo "Opening Google sign-in..."
+        open "https://accounts.google.com/"
+        ;;
+
+    2)
+        echo "Opening Yahoo sign-in..."
+        open "https://login.yahoo.com/"
+        ;;
+
+    3)
+        echo "Opening Apple sign-in..."
+        open "https://account.apple.com/"
+        ;;
+
+    4)
+        echo "Exiting."
+        exit 0
+        ;;
+
+    *)
+        echo "Invalid choice."
+        exit 1
+        ;;
+
+esac
+
+echo ""
+echo "Sign in using the official provider page."
+echo "Your password is not handled by this script."
+echo ""
+```
+
+### Menu
+
+```text
+MUSIC ACCOUNT SIGN-IN
+
+1) Google
+2) Yahoo
+3) Apple
+4) Exit
+```
+
+This is a **launcher**, not a credential collector. Google, Yahoo, and Apple handle the actual authentication themselves.

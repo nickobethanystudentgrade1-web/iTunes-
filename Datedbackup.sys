@@ -1,0 +1,204 @@
+# iTunes Dated Backup Script
+
+Save as:
+
+`iTunesDatedBackup.ps1`
+
+```powershell
+# ==========================================================
+# iTunes Dated Backup
+# Windows + iTunes 12.x
+# ==========================================================
+
+$ErrorActionPreference = "SilentlyContinue"
+
+# ----------------------------------------------------------
+# BACKUP DRIVE
+# ----------------------------------------------------------
+
+# Change this to your external drive.
+$BackupDrive = "D:\"
+
+$BackupRoot = Join-Path $BackupDrive "iTunes_Backups"
+
+# Create timestamp
+$Date = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+
+# Individual backup folder
+$BackupFolder = Join-Path $BackupRoot $Date
+
+# ----------------------------------------------------------
+# LOG
+# ----------------------------------------------------------
+
+$LogFolder = Join-Path $BackupRoot "Logs"
+
+New-Item -ItemType Directory -Path $LogFolder -Force | Out-Null
+New-Item -ItemType Directory -Path $BackupFolder -Force | Out-Null
+
+$LogFile = Join-Path $LogFolder "iTunes_Backup_Log.txt"
+
+function Write-Log {
+    param (
+        [string]$Message
+    )
+
+    $Time = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+    $Entry = "[$Time] $Message"
+
+    Add-Content -Path $LogFile -Value $Entry
+
+    Write-Host $Entry
+}
+
+# ----------------------------------------------------------
+# START
+# ----------------------------------------------------------
+
+Write-Log "=========================================="
+Write-Log "iTunes dated backup started"
+Write-Log "=========================================="
+
+Write-Log "Backup folder: $BackupFolder"
+
+# ----------------------------------------------------------
+# CHECK DRIVE
+# ----------------------------------------------------------
+
+if (-not (Test-Path $BackupDrive)) {
+
+    Write-Log "ERROR: Backup drive not found: $BackupDrive"
+
+    exit
+}
+
+Write-Log "Backup drive detected."
+
+# ----------------------------------------------------------
+# iTUNES LOCATIONS
+# ----------------------------------------------------------
+
+$Locations = @(
+    "$env:USERPROFILE\Music\iTunes",
+    "$env:USERPROFILE\Music\iTunes Media",
+    "$env:APPDATA\Apple Computer\iTunes",
+    "$env:LOCALAPPDATA\Apple Computer\iTunes"
+)
+
+# ----------------------------------------------------------
+# COPY iTUNES DATA
+# ----------------------------------------------------------
+
+$Copied = 0
+
+foreach ($Source in $Locations) {
+
+    if (Test-Path $Source) {
+
+        $FolderName = Split-Path $Source -Leaf
+
+        $Destination = Join-Path `
+            $BackupFolder `
+            $FolderName
+
+        Write-Log "Copying: $Source"
+
+        try {
+
+            Copy-Item `
+                -Path $Source `
+                -Destination $Destination `
+                -Recurse `
+                -Force `
+                -ErrorAction Stop
+
+            Write-Log "Successfully backed up: $FolderName"
+
+            $Copied++
+
+        }
+        catch {
+
+            Write-Log "ERROR copying: $Source"
+            Write-Log $_.Exception.Message
+        }
+    }
+}
+
+# ----------------------------------------------------------
+# BACKUP INFORMATION
+# ----------------------------------------------------------
+
+$InfoFile = Join-Path $BackupFolder "Backup_Info.txt"
+
+@"
+iTunes Dated Backup
+===================
+
+Backup Date:
+$(Get-Date)
+
+Computer:
+$env:COMPUTERNAME
+
+Windows User:
+$env:USERNAME
+
+Backup Location:
+$BackupFolder
+
+Folders Copied:
+$Copied
+
+Original iTunes data was not deleted.
+"@ | Set-Content $InfoFile
+
+# ----------------------------------------------------------
+# FINISH
+# ----------------------------------------------------------
+
+Write-Log "Backup completed."
+
+Write-Log "Folders successfully copied: $Copied"
+
+Write-Log "Backup saved to: $BackupFolder"
+
+Write-Log "=========================================="
+Write-Log "iTunes dated backup finished"
+Write-Log "=========================================="
+
+Write-Host ""
+Write-Host "========================================="
+Write-Host "          BACKUP COMPLETE"
+Write-Host "========================================="
+Write-Host ""
+
+Write-Host "Saved to:"
+Write-Host $BackupFolder -ForegroundColor Green
+
+Write-Host ""
+```
+
+### Result
+
+Every time you run the backup, it creates a **new dated folder**:
+
+```text
+D:\
+└── iTunes_Backups
+    ├── 2026-08-07_07-52-31
+    │   ├── iTunes
+    │   ├── iTunes Media
+    │   └── Backup_Info.txt
+    │
+    ├── 2026-08-08_09-14-22
+    │   ├── iTunes
+    │   ├── iTunes Media
+    │   └── Backup_Info.txt
+    │
+    └── Logs
+        └── iTunes_Backup_Log.txt
+```
+
+The original iTunes files remain untouched, and each backup gets its own timestamp.

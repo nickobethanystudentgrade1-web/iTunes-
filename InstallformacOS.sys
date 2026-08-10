@@ -1,0 +1,31 @@
+#Requires -RunAsAdministrator
+
+<#
+.SYNOPSIS
+    Downloads and silently installs iTunes for Windows (64-bit).
+#>
+
+$ErrorActionPreference = 'Stop'
+
+# Define variables
+$DownloadUrl = "https://www.apple.com/itunes/download/win64"
+$InstallerPath = "$env:TEMP\iTunes64Setup.exe"
+
+Write-Host "Downloading iTunes installer..." -ForegroundColor Cyan
+
+# Download the installer
+Invoke-WebRequest -Uri $DownloadUrl -OutFile $InstallerPath
+
+Write-Host "Download complete. Starting silent installation..." -ForegroundColor Cyan
+
+# Run the installer silently 
+# Note: Apple's .exe wrapper accepts specific flags, or you can extract the .msi files for fine-tuned deployment.
+Start-Process -FilePath $InstallerPath -ArgumentList "/silent", "/norestart" -Wait
+
+# Clean up installer
+if (Test-Path $InstallerPath) {
+    Remove-Item $InstallerPath -Force
+    Write-Host "Temporary installer cleaned up." -ForegroundColor Green
+}
+
+Write-Host "iTunes installation process finished." -ForegroundColor Green

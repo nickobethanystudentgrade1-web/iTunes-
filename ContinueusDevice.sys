@@ -1,0 +1,341 @@
+# iTunes Continuous Device Monitor
+
+This version continuously:
+
+**Open iTunes → Detect device → Sync → Create dated backup → Log → Wait for next device**
+
+```powershell
+# ==========================================================
+# iTunes Continuous Device Monitor
+# Windows + iTunes 12.x
+# ==========================================================
+
+$ErrorActionPreference = "SilentlyContinue"
+
+# ----------------------------------------------------------
+# SETTINGS
+# ----------------------------------------------------------
+
+$BackupDrive = "D:\"
+
+$BackupRoot = Join-Path $BackupDrive "iTunes_Backups"
+
+# ----------------------------------------------------------
+# LOGGING
+# ----------------------------------------------------------
+
+$LogFolder = Join-Path $BackupRoot "Logs"
+
+New-Item -ItemType Directory `
+    -Path $LogFolder `
+    -Force | Out-Null
+
+$LogFile = Join-Path `
+    $LogFolder `
+    "iTunes_Device_Log.txt"
+
+function Write-Log {
+    param (
+        [string]$Message
+    )
+
+    $Time = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+    $Entry = "[$Time] $Message"
+
+    Add-Content `
+        -Path $LogFile `
+        -Value $Entry
+
+    Write-Host $Entry
+}
+
+# ----------------------------------------------------------
+# FIND iTUNES
+# ----------------------------------------------------------
+
+$iTunesPaths = @(
+    "$env:ProgramFiles\iTunes\iTunes.exe",
+    "${env:ProgramFiles(x86)}\iTunes\iTunes.exe"
+)
+
+$iTunesPath = $iTunesPaths |
+    Where-Object { Test-Path $_ } |
+    Select-Object -First 1
+
+if (-not $iTunesPath) {
+
+    Write-Log "ERROR: iTunes.exe was not found."
+
+    exit
+}
+
+Write-Log "iTunes found: $iTunesPath"
+
+# ----------------------------------------------------------
+# OPEN iTUNES
+# ----------------------------------------------------------
+
+if (-not (Get-Process "iTunes" -ErrorAction SilentlyContinue)) {
+
+    Write-Log "Opening iTunes..."
+
+    Start-Process $iTunesPath
+
+    Start-Sleep -Seconds 5
+}
+
+Write-Log "iTunes started."
+
+# ----------------------------------------------------------
+# CONNECT TO iTUNES
+# ----------------------------------------------------------
+
+$iTunes = $null
+
+while ($null -eq $iTunes) {
+
+    try {
+
+        $iTunes = New-Object `
+            -ComObject iTunes.Application
+
+        Write-Log "iTunes is ready."
+
+    }
+    catch {
+
+        Start-Sleep -Seconds 2
+    }
+}
+
+# ----------------------------------------------------------
+# CONTINUOUS MONITOR
+# ----------------------------------------------------------
+
+Write-Log "Continuous device monitoring started."
+
+while ($true) {
+
+    # ======================================================
+    # WAIT FOR DEVICE
+    # ======================================================
+
+    Write-Host ""
+    Write-Host "-----------------------------------------"
+    Write-Host "Waiting for an Apple device..."
+    Write-Host "-----------------------------------------"
+    Write-Host ""
+
+    $DeviceDetected = $false
+    $DeviceName = ""
+
+    while (-not $DeviceDetected) {
+
+        try {
+
+            foreach ($Source in $iTunes.Sources) {
+
+                if ($Source.Kind -eq 2) {
+
+                    $DeviceDetected = $true
+                    $DeviceName = $Source.Name
+
+                    break
+                }
+            }
+
+        }
+        catch {
+
+            Write-Log "Unable to read iTunes devices. Retrying..."
+        }
+
+        if (-not $DeviceDetected) {
+
+            Start-Sleep -Seconds 3
+        }
+    }
+
+    # ======================================================
+    # DEVICE DETECTED
+    # ======================================================
+
+    Write-Log "DEVICE DETECTED: $DeviceName"
+
+    Write-Host ""
+    Write-Host "========================================="
+    Write-Host "        DEVICE DETECTED"
+    Write-Host "========================================="
+    Write-Host ""
+    Write-Host "Device: $DeviceName"
+    Write-Host ""
+
+    # Give iTunes time to initialize
+    Start-Sleep -Seconds 5
+
+    # ======================================================
+    # START SYNC
+    # ======================================================
+
+    Write-Log "Starting iTunes sync for $DeviceName..."
+
+    try {
+
+        $iTunes.UpdateIPod()
+
+        Write-Log "Sync command sent successfully."
+
+    }
+    catch {
+
+        Write-Log "ERROR: Could not start sync."
+    }
+
+    # ======================================================
+    # CREATE DATED BACKUP
+    # ======================================================
+
+    $Date = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+
+    $BackupFolder = Join-Path `
+        $BackupRoot `
+        $Date
+
+    New-Item -ItemType Directory `
+        -Path $BackupFolder `
+        -Force | Out-Null
+
+    Write-Log "Creating dated backup: $BackupFolder"
+
+    # ======================================================
+    # BACKUP iTUNES DATA
+    # ======================================================
+
+    $Locations = @(
+        "$env:USERPROFILE\Music\iTunes",
+        "$env:USERPROFILE\Music\iTunes Media",
+        "$env:APPDATA\Apple Computer\iTunes",
+        "$env:LOCALAPPDATA\Apple Computer\iTunes"
+    )
+
+    $Copied = 0
+
+    foreach ($Source in $Locations) {
+
+        if (Test-Path $Source) {
+
+            $FolderName = Split-Path `
+                $Source `
+                -Leaf
+
+            $Destination = Join-Path `
+                $BackupFolder `
+                $FolderName
+
+            try {
+
+                Copy-Item `
+                    -Path $Source `
+                    -Destination $Destination `
+                    -Recurse `
+                    -Force `
+                    -ErrorAction Stop
+
+                Write-Log "Backed up: $FolderName"
+
+                $Copied++
+
+            }
+            catch {
+
+                Write-Log "ERROR backing up: $Source"
+            }
+        }
+    }
+
+    Write-Log "Backup completed. Folders copied: $Copied"
+
+    # ======================================================
+    # WAIT FOR DEVICE DISCONNECT
+    # ======================================================
+
+    Write-Log "Monitoring $DeviceName for disconnect..."
+
+    while ($true) {
+
+        $StillConnected = $false
+
+        try {
+
+            foreach ($Source in $iTunes.Sources) {
+
+                if ($Source.Kind -eq 2) {
+
+                    $StillConnected = $true
+
+                    break
+                }
+            }
+
+        }
+        catch {
+
+            $StillConnected = $false
+        }
+
+        if (-not $StillConnected) {
+
+            Write-Log "DEVICE DISCONNECTED: $DeviceName"
+
+            break
+        }
+
+        Start-Sleep -Seconds 5
+    }
+
+    # ======================================================
+    # RETURN TO MONITORING
+    # ======================================================
+
+    Write-Log "Device removed."
+    Write-Log "Returning to device monitoring."
+
+    Write-Host ""
+    Write-Host "Device disconnected."
+    Write-Host "Waiting for the next device..."
+    Write-Host ""
+
+    Start-Sleep -Seconds 3
+}
+```
+
+### Continuous behavior
+
+```text
+       START
+         ↓
+    Open iTunes
+         ↓
+ Wait for iTunes ready
+         ↓
+  Wait for device
+         ↓
+  Device detected
+         ↓
+    Start sync
+         ↓
+ Create dated backup
+         ↓
+    Log results
+         ↓
+Wait for disconnect
+         ↓
+  Device removed
+         ↓
+Wait for NEXT device
+         ↓
+       REPEAT
+```
+
+The script **does not stop after the first device**. It keeps running until you press **Ctrl+C**.

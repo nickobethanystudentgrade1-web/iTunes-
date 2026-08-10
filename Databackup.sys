@@ -1,0 +1,189 @@
+# iTunes Data Backup Script — Windows
+
+Save as:
+
+`iTunesBackup.ps1`
+
+```powershell
+# ==========================================================
+# iTunes Data Backup Script
+# Windows / iTunes 12.x
+# ==========================================================
+
+$ErrorActionPreference = "Stop"
+
+# -------- BACKUP LOCATION --------
+# Change this to your external drive if desired.
+$BackupDrive = "D:\"
+
+$Date = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$BackupFolder = Join-Path $BackupDrive "iTunes_Backup_$Date"
+
+# -------- POSSIBLE ITUNES LOCATIONS --------
+
+$Locations = @(
+    "$env:USERPROFILE\Music\iTunes",
+    "$env:USERPROFILE\Music\iTunes Media",
+    "$env:APPDATA\Apple Computer\iTunes",
+    "$env:LOCALAPPDATA\Apple Computer\iTunes",
+    "C:\Program Files\iTunes",
+    "C:\Program Files (x86)\iTunes",
+    "C:\Program Files\Common Files\Apple",
+    "C:\Program Files (x86)\Common Files\Apple"
+)
+
+Write-Host ""
+Write-Host "========================================="
+Write-Host "        iTunes DATA BACKUP TOOL"
+Write-Host "========================================="
+Write-Host ""
+
+# -------- CHECK BACKUP DRIVE --------
+
+if (-not (Test-Path $BackupDrive)) {
+    Write-Host "Backup location not found: $BackupDrive" -ForegroundColor Red
+    Write-Host "Connect the drive or change `$BackupDrive in the script."
+    exit
+}
+
+New-Item -ItemType Directory -Path $BackupFolder -Force | Out-Null
+
+Write-Host "Backup folder:"
+Write-Host $BackupFolder
+Write-Host ""
+
+# -------- STOP ITUNES --------
+
+Write-Host "Checking iTunes..."
+
+$iTunesProcess = Get-Process iTunes -ErrorAction SilentlyContinue
+
+if ($iTunesProcess) {
+
+    Write-Host "iTunes is currently running."
+    Write-Host "Closing iTunes before backup..."
+
+    Stop-Process -Name iTunes -Force
+
+    Start-Sleep -Seconds 3
+}
+
+# -------- COPY FILES --------
+
+$Copied = 0
+
+foreach ($Source in $Locations) {
+
+    if (Test-Path $Source) {
+
+        Write-Host ""
+        Write-Host "Found:"
+        Write-Host $Source
+
+        $FolderName = Split-Path $Source -Leaf
+
+        $Destination = Join-Path `
+            $BackupFolder `
+            $FolderName
+
+        Write-Host "Copying to:"
+        Write-Host $Destination
+
+        try {
+
+            Copy-Item `
+                -Path $Source `
+                -Destination $Destination `
+                -Recurse `
+                -Force `
+                -ErrorAction Stop
+
+            Write-Host "Backup complete." -ForegroundColor Green
+
+            $Copied++
+
+        }
+        catch {
+
+            Write-Host "Could not copy: $Source" `
+                -ForegroundColor Yellow
+
+            Write-Host $_.Exception.Message `
+                -ForegroundColor Yellow
+        }
+    }
+}
+
+# -------- CREATE BACKUP INFORMATION --------
+
+$InfoFile = Join-Path $BackupFolder "Backup_Info.txt"
+
+@"
+iTunes Backup
+=============
+
+Date:
+$(Get-Date)
+
+Computer:
+$env:COMPUTERNAME
+
+Windows User:
+$env:USERNAME
+
+Backup Location:
+$BackupFolder
+
+Folders successfully copied:
+$Copied
+
+This backup script does not delete the original iTunes files.
+"@ | Set-Content $InfoFile
+
+# -------- FINISH --------
+
+Write-Host ""
+Write-Host "========================================="
+Write-Host "           BACKUP COMPLETE"
+Write-Host "========================================="
+Write-Host ""
+
+Write-Host "Backup saved to:"
+Write-Host $BackupFolder -ForegroundColor Green
+
+Write-Host ""
+Write-Host "Original files were NOT deleted."
+Write-Host ""
+```
+
+### Run it
+
+Open PowerShell in the folder containing the script and run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\iTunesBackup.ps1
+```
+
+### To use an external drive
+
+Change:
+
+```powershell
+$BackupDrive = "D:\"
+```
+
+to the drive letter of your external drive, for example:
+
+```powershell
+$BackupDrive = "E:\"
+```
+
+The script creates a folder such as:
+
+```text
+E:\iTunes_Backup_2026-08-07_07-30-00\
+```
+
+and places the backup inside it.
+
+**Important:** this is a **backup/copy script**, not a system-file replacement script. It won't delete or overwrite your original iTunes installation.
