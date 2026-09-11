@@ -1,0 +1,20 @@
+# iTunes APK format definition
+# This file documents the file formats accepted by the mobile utility.
+
+FORMAT_VERSION=1
+APP_FORMAT=iTunes-Archive
+
+[ARCHIVES]
+EXTENSIONS=zip,apk
+MIME_TYPES=application/zip,application/x-zip-compressed,application/vnd.android.package-archive
+PASSWORD_SUPPORT=enabled
+PASSWORD_SOURCE=music.config.ts
+
+[MUSIC]
+EXTENSIONS=mp3,m4a,m4v,aac,wav,flac,alac
+METADATA_SUPPORT=planned
+
+[EXTRACTION]
+OUTPUT_DIRECTORY=Extracted
+PATH_TRAVERSAL_PROTECTION=enabled
+LOCAL_ONLY=true
