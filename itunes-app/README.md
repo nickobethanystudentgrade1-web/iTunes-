@@ -1,6 +1,6 @@
-# iTunes APK
+# iTunes
 
-A mobile archive utility with an iTunes-inspired identity. Select ZIP or APK files, unlock protected archives with the configured password, and extract their contents safely into local app storage.
+An iTunes-branded mobile archive utility. Select ZIP or APK files, unlock protected archives with the configured password, and extract their contents safely into local app storage.
 
 ## Run
 
