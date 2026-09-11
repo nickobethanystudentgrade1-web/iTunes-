@@ -1,4 +1,4 @@
-# iTunes APK format definition
+# iTunes format definition
 # This file documents the file formats accepted by the mobile utility.
 
 FORMAT_VERSION=1
