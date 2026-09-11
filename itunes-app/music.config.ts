@@ -6,6 +6,7 @@
  */
 export const MUSIC_CONFIG = {
   appName: 'iTunes',
+  brandStatus: 'official',
   appEyebrow: 'LIBRARY UTILITY',
   tagline: 'Unlock your archive.',
   description:
