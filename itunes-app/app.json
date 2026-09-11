@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "iTunes APK",
+    "slug": "itunes-apk",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/itunes-icon.png",
+    "scheme": "itunes-apk",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/itunes-icon.png",
+        "backgroundColor": "#090B18"
+      },
+      "package": "com.caroline.itunes"
+    },
+    "web": {
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
